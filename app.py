@@ -2,7 +2,6 @@ import numpy as np
 from PIL import Image
 import PIL.Image as Image
 import csv
-from streamlit_echarts import st_echarts
 from st_on_hover_tabs import on_hover_tabs
 import streamlit as st
 import warnings
