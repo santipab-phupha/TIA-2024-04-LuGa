@@ -1,2 +1,7 @@
 streamlit
 streamlit-on-Hover-tabs
+numpy
+Pillow
+streamlit
+opencv-python
+pandas
