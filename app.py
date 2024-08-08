@@ -156,8 +156,8 @@ if tabs == 'Upload':
         'ANXIETY': 2,
         'PEER_PRESSURE': 2,
         'CHRONIC DISEASE': 2,
-        'FATIGUE ': 2,  # Note the trailing space
-        'ALLERGY ': 2,  # Note the trailing space
+        'FATIGUE': 2,  # Note the trailing space
+        'ALLERGY': 2,  # Note the trailing space
         'WHEEZING': 2,
         'ALCOHOL CONSUMING': 2,
         'COUGHING': 2,
