@@ -2,11 +2,20 @@ import numpy as np
 from PIL import Image
 import PIL.Image as Image
 import csv
+from streamlit_echarts import st_echarts
 from st_on_hover_tabs import on_hover_tabs
 import streamlit as st
 import warnings
+import cv2
 import os
 import pandas as pd
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from sklearn.metrics import classification_report, accuracy_score
+from sklearn.preprocessing import LabelEncoder
+import joblib
+import numpy as np # linear algebra
+from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 warnings.filterwarnings('ignore')
@@ -133,6 +142,115 @@ with st.sidebar:
         <div style='border: 2px solid green; padding: 10px; white; margin-top: 5px; margin-buttom: 5px; margin-right: 20px; bottom: 50;'>
             <h1 style='text-align: center; color: yellow; font-size: 100%'> Lung Cancer Identification </h1>
             <h1 style='text-align: center; color: orange; font-size: 100%'> KMUTT & KMITL </h1>
-            <h1 style='text-align: center; color: blue; font-size: 100%'> ✨ Thailand Innovation Awards  ⚙️ </h1>
+            <h1 style='text-align: center; color: blue; font-size: 100%'> ✨ Thailand Innovation Awards ⚙️ </h1>
         </div>
     """, unsafe_allow_html=True)
+
+
+if tabs == 'Upload':
+    # Load the trained model
+    model = joblib.load('./random_forest_lung_cancer_model.pkl')
+    input_data = {
+        'GENDER': 0,  # Assuming 'F' was encoded as 1
+        'AGE': 59,
+        'SMOKING': 2,
+        'YELLOW_FINGERS': 2,
+        'ANXIETY': 2,
+        'PEER_PRESSURE': 2,
+        'CHRONIC DISEASE': 2,
+        'FATIGUE ': 2,  # Note the trailing space
+        'ALLERGY ': 2,  # Note the trailing space
+        'WHEEZING': 2,
+        'ALCOHOL CONSUMING': 2,
+        'COUGHING': 2,
+        'SHORTNESS OF BREATH': 2,
+        'SWALLOWING DIFFICULTY': 2,
+        'CHEST PAIN': 2
+    }
+    
+    st.markdown(
+        """
+        <style>
+        .sky-border {
+            text-align: center; 
+            color: white; 
+            font-size: 125%; 
+            border: 2px solid #33FFFF; 
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        </style>
+        """, 
+        unsafe_allow_html=True
+    )
+    
+    cols = st.columns(4)
+
+    cols[0].markdown("<h1 class='sky-border'>GENDER</h1>", unsafe_allow_html=True)
+    GENDER = cols[0].text_input(' ', value=input_data['GENDER'], key='GENDER')
+
+    cols[1].markdown("<h1 class='sky-border'>AGE</h1>", unsafe_allow_html=True)
+    AGE = cols[1].number_input(' ', value=input_data['AGE'], key='AGE')
+
+    cols[2].markdown("<h1 class='sky-border'>SMOKING</h1>", unsafe_allow_html=True)
+    SMOKING = cols[2].number_input(' ', value=input_data['SMOKING'], key='SMOKING')
+
+    cols[3].markdown("<h1 class='sky-border'>YELLOW_FINGERS</h1>", unsafe_allow_html=True)
+    YELLOW_FINGERS = cols[3].number_input(' ', value=input_data['YELLOW_FINGERS'], key='YELLOW_FINGERS')
+
+    cols[0].markdown("<h1 class='sky-border'>ANXIETY</h1>", unsafe_allow_html=True)
+    ANXIETY = cols[0].number_input(' ', value=input_data['ANXIETY'], key='ANXIETY')
+
+    cols[1].markdown("<h1 class='sky-border'>PEER_PRESSURE</h1>", unsafe_allow_html=True)
+    PEER_PRESSURE = cols[1].number_input(' ', value=input_data['PEER_PRESSURE'], key='PEER_PRESSURE')
+
+    cols[2].markdown("<h1 class='sky-border'>CHRONIC DISEASE</h1>", unsafe_allow_html=True)
+    CHRONIC_DISEASE = cols[2].number_input(' ', value=input_data['CHRONIC DISEASE'], key='CHRONIC DISEASE')
+
+    cols[3].markdown("<h1 class='sky-border'>FATIGUE</h1>", unsafe_allow_html=True)
+    FATIGUE = cols[3].number_input(' ', value=input_data['FATIGUE'], key='FATIGUE')
+
+    cols[0].markdown("<h1 class='sky-border'>ALLERGY</h1>", unsafe_allow_html=True)
+    ALLERGY = cols[0].number_input(' ', value=input_data['ALLERGY'], key='ALLERGY')
+
+    cols[1].markdown("<h1 class='sky-border'>WHEEZING</h1>", unsafe_allow_html=True)
+    WHEEZING = cols[1].number_input(' ', value=input_data['WHEEZING'], key='WHEEZING')
+
+    cols[2].markdown("<h1 class='sky-border'>ALCOHOL CONSUMING</h1>", unsafe_allow_html=True)
+    ALCOHOL_CONSUMING = cols[2].number_input(' ', value=input_data['ALCOHOL CONSUMING'], key='ALCOHOL CONSUMING')
+
+    cols[3].markdown("<h1 class='sky-border'>COUGHING</h1>", unsafe_allow_html=True)
+    COUGHING = cols[3].number_input(' ', value=input_data['COUGHING'], key='COUGHING')
+
+    cols[0].markdown("<h1 class='sky-border'>SHORTNESS OF BREATH</h1>", unsafe_allow_html=True)
+    SHORTNESS_OF_BREATH = cols[0].number_input(' ', value=input_data['SHORTNESS OF BREATH'], key='SHORTNESS OF BREATH')
+
+    cols[1].markdown("<h1 class='sky-border'>SWALLOWING DIFFICULTY</h1>", unsafe_allow_html=True)
+    SWALLOWING_DIFFICULTY = cols[1].number_input(' ', value=input_data['SWALLOWING DIFFICULTY'], key='SWALLOWING DIFFICULTY')
+
+    cols[2].markdown("<h1 class='sky-border'>CHEST PAIN</h1>", unsafe_allow_html=True)
+    CHEST_PAIN = cols[2].number_input(' ', value=input_data['CHEST PAIN'], key='CHEST PAIN')
+    
+    # Collect input data into a dictionary
+    input_data = {
+        'GENDER': GENDER,
+        'AGE': AGE,
+        'SMOKING': SMOKING,
+        'YELLOW_FINGERS': YELLOW_FINGERS,
+        'ANXIETY': ANXIETY,
+        'PEER_PRESSURE': PEER_PRESSURE,
+        'CHRONIC DISEASE': CHRONIC_DISEASE,
+        'FATIGUE ': FATIGUE,
+        'ALLERGY ': ALLERGY,
+        'WHEEZING': WHEEZING,
+        'ALCOHOL CONSUMING': ALCOHOL_CONSUMING,
+        'COUGHING': COUGHING,
+        'SHORTNESS OF BREATH': SHORTNESS_OF_BREATH,
+        'SWALLOWING DIFFICULTY': SWALLOWING_DIFFICULTY,
+        'CHEST PAIN': CHEST_PAIN
+    }
+    
+    input_data['GENDER'] = 0 if input_data['GENDER'] == "M" else 1
+    input_df = pd.DataFrame([input_data])
+    predicted_label = model.predict(input_df)
+    st.write(predicted_label)
