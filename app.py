@@ -281,8 +281,8 @@ if tabs == 'Pre-diagnosis':
                     unsafe_allow_html=True
             )
 if tabs == "CT-Scan":
-    processor = AutoFeatureExtractor.from_pretrained('./Swin')
-    model = SwinForImageClassification.from_pretrained('./Swin')
+    processor = AutoFeatureExtractor.from_pretrained('alicelouis/Swin2e-4Lion')
+    model = SwinForImageClassification.from_pretrained('alicelouis/Swin2e-4Lion')
     st.markdown(" ")
     st.markdown(
         """
