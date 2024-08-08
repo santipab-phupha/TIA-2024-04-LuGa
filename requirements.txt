@@ -4,3 +4,8 @@ numpy
 Pillow
 opencv-python
 pandas
+opencv-python
+pandas
+scikit-learn
+joblib
+matplotlib
