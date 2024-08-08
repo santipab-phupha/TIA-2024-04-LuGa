@@ -4,7 +4,6 @@ import PIL.Image as Image
 import csv
 from st_on_hover_tabs import on_hover_tabs
 import streamlit as st
-import cv2
 import os
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
