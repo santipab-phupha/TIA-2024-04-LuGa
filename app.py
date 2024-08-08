@@ -14,6 +14,8 @@ import joblib
 import numpy as np # linear algebra
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+from transformers import AutoFeatureExtractor, SwinForImageClassification
+import requests
 
 st.set_page_config(layout="wide")
 warnings.filterwarnings('ignore')
@@ -119,15 +121,15 @@ st.markdown(css_styles, unsafe_allow_html=True)
 
 st.markdown(
     """
-<div style='border: 2px solid green; border-radius: 5px; padding: 10px; background-color: white; font-family: "Times New Roman", Times, serif;'>
-    <h1 style='text-align: center; color: green; font-family: "Times New Roman", Times, serif;'>
-    🏥 Lung Cancer Classification with Vision Transformer : จำแนกมะเร็งปอด 🫁
+<div style='border: 2px solid #0080FF; border-radius: 5px; padding: 10px; background-color: white; font-family: "Times New Roman", Times, serif;'>
+    <h1 style='text-align: center; color: #0080FF; font-family: "Times New Roman", Times, serif;'>
+    🏥 Lung Cancer Identification : จำแนกมะเร็งปอด 🫁
     </h1>
 </div>
     """, unsafe_allow_html=True)
 with st.sidebar:
-    tabs = on_hover_tabs(tabName=['Home','Upload', 'Analytics', 'More Information', 'Reset'], 
-    iconName=['home','upload', 'analytics', 'informations', 'refresh'], 
+    tabs = on_hover_tabs(tabName=['Home','Pre-diagnosis', 'X-Ray', 'CT-Scan', '3D-Segmentation'], 
+    iconName=['🏠','📃', '🩻', '🏥', '🎲'], 
     styles={'navtab': {'background-color': '#111', 'color': '#818181', 'font-size': '18px', 
                     'transition': '.3s', 'white-space': 'nowrap', 'text-transform': 'uppercase'}, 
                     'tabOptionsStyle': 
@@ -145,7 +147,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 
-if tabs == 'Upload':
+if tabs == 'Pre-diagnosis':
     # Load the trained model
     model = joblib.load('./random_forest_lung_cancer_model.pkl')
     input_data = {
@@ -249,6 +251,101 @@ if tabs == 'Upload':
     }
     
     input_data['GENDER'] = 0 if input_data['GENDER'] == "M" else 1
-    input_df = pd.DataFrame([input_data])
-    predicted_label = model.predict(input_df)
-    st.write(predicted_label)
+    submit_col_3 = st.button('Submit', key='submit_col_3', use_container_width=True)
+
+    if submit_col_3:
+        # Convert input data into a DataFrame
+        input_df = pd.DataFrame([input_data])
+        predicted_label = model.predict(input_df)
+        print(predicted_label)
+        # Assuming loaded_model is defined and loaded somewhere in your code
+        predicted_label = model.predict(input_df)
+        if predicted_label[0] == 0:
+                st.markdown(" ")
+                st.markdown(
+                        f"""
+                        <div style='border: 2px solid green; border-radius: 5px; padding: 5px; background-color: white;'>
+                                <h3 style='text-align: center; color: green; font-size: 180%'> ✅ ✅ ✅ คุณปลอดภัย ✅ ✅ ✅</h3>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                        )        
+        else:
+            st.markdown(" ")
+            st.markdown(
+                f"""
+                    <div style='border: 2px solid red; border-radius: 5px; padding: 5px; background-color: white;'>
+                            <h3 style='text-align: center; color: red; font-size: 180%'> ❌ ❗ ⚠️ มีความเสี่ยงจะเป็นมะเร็งปอด ⚠️ ❗ ❌ </h3>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+            )
+if tabs == "CT-Scan":
+    processor = AutoFeatureExtractor.from_pretrained('./Swin')
+    model = SwinForImageClassification.from_pretrained('./Swin')
+    st.markdown(" ")
+    st.markdown(
+        """
+    <div style='border: 2px solid #0080FF; border-radius: 5px; padding: 10px; font-family: "Times New Roman", Times, serif;'>
+        <h1 style='text-align: center; color: #0080FF; font-family: "Times New Roman", Times, serif;'>
+        🔎 CT-Scan Images for Classification 🖼️
+        </h1>
+    </div>
+        """, unsafe_allow_html=True)
+    
+    uploaded_files = st.file_uploader(" ", type=['jpg', 'jpeg', 'png'], accept_multiple_files=True)
+
+    if uploaded_files:
+        answer = {}
+        cols = st.columns(3)  # Create 3 columns for the grid layout
+        col_idx = 0  # Track the current column index
+
+        for uploaded_file in uploaded_files:
+            with cols[col_idx]:
+                # Display file name
+                st.markdown(
+                    f"""
+                    <div style='border: 2px solid white; border-radius: 5px; padding: 5px;'>
+                        <h3 style='text-align: center; color: #0080FF; font-size: 180%'>{uploaded_file.name}</h3>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                
+                st.markdown(" ")
+                
+                img = Image.open(uploaded_file)
+                img_out = img.resize((224, 224))
+                img_out = np.array(img_out)
+                image = img.convert('RGB')
+                inputs = processor(images=image, return_tensors="pt")
+                outputs = model(**inputs)
+                logits = outputs.logits
+                predicted_class_idx = logits.argmax(-1).item()
+                predicted_label = model.config.id2label[predicted_class_idx]
+                answer[uploaded_file.name] = predicted_label
+                
+                # Display prediction result
+                if answer[uploaded_file.name] == "normal":
+                    st.markdown(
+                        f"""
+                        <div style='border: 2px solid green; border-radius: 5px; padding: 5px; background-color: white;'>
+                            <h3 style='text-align: center; color: green; font-size: 180%'> ✅✅✅ {answer[uploaded_file.name]} ✅✅✅ </h3>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )        
+                else:
+                    st.markdown(
+                        f"""
+                        <div style='border: 2px solid red; border-radius: 5px; padding: 5px; background-color: white;'>
+                            <h3 style='text-align: center; color: red; font-size: 180%'> ‼️ ⚠️🫁 {answer[uploaded_file.name]} 🫁⚠️ ‼️ </h3>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                
+                st.markdown(" ")    
+                st.image(img, caption=" ", use_column_width=True)
+            
+            col_idx = (col_idx + 1) % 3  # Move to the next column or reset to 0
