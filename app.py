@@ -5,6 +5,7 @@ import csv
 from st_on_hover_tabs import on_hover_tabs
 import streamlit as st
 import os
+import warnings
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.metrics import classification_report, accuracy_score
