@@ -123,7 +123,8 @@ st.markdown(
     """
 <div style='border: 2px solid #0080FF; border-radius: 5px; padding: 10px; background-color: white; font-family: "Times New Roman", Times, serif;'>
     <h1 style='text-align: center; color: #0080FF; font-family: "Times New Roman", Times, serif;'>
-    🏥 Lung Cancer Identification : จำแนกมะเร็งปอด 🫁
+    Lung Cancer Identification 
+       🏥 จำแนกมะเร็งปอด 🫁
     </h1>
 </div>
     """, unsafe_allow_html=True)
