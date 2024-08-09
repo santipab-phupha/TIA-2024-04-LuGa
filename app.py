@@ -352,3 +352,7 @@ if tabs == "CT-Scan":
                 st.image(img, caption=" ", use_column_width=True)
             
             col_idx = (col_idx + 1) % 3  # Move to the next column or reset to 0
+
+if tabs == "3D-Segmentation":
+    st.markdown(" ")
+    st.image('./segment_show.jpeg',use_column_width=True)
