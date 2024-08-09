@@ -146,7 +146,10 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
 
-
+if tabs == 'Home':
+    st.markdown(" ")
+    st.image('./Home_1.jpg',use_column_width=True)
+    st.image('./Home_2.jpg',use_column_width=True)
 if tabs == 'Pre-diagnosis':
     # Load the trained model
     model = joblib.load('./random_forest_lung_cancer_model.pkl')
