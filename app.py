@@ -14,7 +14,7 @@ import joblib
 import numpy as np # linear algebra
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
-from transformers import AutoFeatureExtractor, SwinForImageClassification
+from transformers import AutoFeatureExtractor,AutoImageProcessor, SwinForImageClassification, ResNetForImageClassification
 import requests
 
 st.set_page_config(layout="wide")
@@ -283,9 +283,79 @@ if tabs == 'Pre-diagnosis':
                     """,
                     unsafe_allow_html=True
             )
+if tabs == "X-Ray":
+    processor = AutoImageProcessor.from_pretrained('resnet50_tia')
+    model = ResNetForImageClassification.from_pretrained('resnet50_tia')
+    st.markdown(" ")
+    st.markdown(
+        """
+    <div style='border: 2px solid white; border-radius: 5px; padding: 10px; font-family: "Times New Roman", Times, serif;'>
+        <h1 style='text-align: center; color: white; font-family: "Times New Roman", Times, serif;'>
+        🩻 X-Ray Images for Classification 🩻
+        </h1>
+    </div>
+        """, unsafe_allow_html=True)
+    
+    uploaded_files = st.file_uploader(" ", type=['jpg', 'jpeg', 'png'], accept_multiple_files=True)
+
+    if uploaded_files:
+        answer = {}
+        cols = st.columns(3)  # Create 3 columns for the grid layout
+        col_idx = 0  # Track the current column index
+
+        for uploaded_file in uploaded_files:
+            with cols[col_idx]:
+                # Display file name
+                st.markdown(
+                    f"""
+                    <div style='border: 2px solid white; border-radius: 5px; padding: 5px;'>
+                        <h3 style='text-align: center; color: #0080FF; font-size: 180%'>{uploaded_file.name}</h3>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+                
+                st.markdown(" ")
+                
+                img = Image.open(uploaded_file)
+                img_out = img.resize((224, 224))
+                img_out = np.array(img_out)
+                image = img.convert('RGB')
+                inputs = processor(images=image, return_tensors="pt")
+                outputs = model(**inputs)
+                logits = outputs.logits
+                predicted_class_idx = logits.argmax(-1).item()
+                predicted_label = model.config.id2label[predicted_class_idx]
+                answer[uploaded_file.name] = predicted_label
+                
+                # Display prediction result
+                if answer[uploaded_file.name] == "Normal":
+                    st.markdown(
+                        f"""
+                        <div style='border: 2px solid green; border-radius: 5px; padding: 5px; background-color: white;'>
+                            <h3 style='text-align: center; color: green; font-size: 180%'>✅{answer[uploaded_file.name]}✅</h3>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )        
+                else:
+                    st.markdown(
+                        f"""
+                        <div style='border: 2px solid red; border-radius: 5px; padding: 5px; background-color: white;'>
+                            <h3 style='text-align: center; color: red; font-size: 180%'>{answer[uploaded_file.name]}</h3>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+                
+                st.markdown(" ")    
+                st.image(img, caption=" ", use_column_width=True)
+            
+            col_idx = (col_idx + 1) % 3  # Move to the next column or reset to 0
+
 if tabs == "CT-Scan":
-    processor = AutoFeatureExtractor.from_pretrained('alicelouis/Swin2e-4Lion')
-    model = SwinForImageClassification.from_pretrained('alicelouis/Swin2e-4Lion')
+    processor = AutoFeatureExtractor.from_pretrained('Swin')
+    model = SwinForImageClassification.from_pretrained('Swin')
     st.markdown(" ")
     st.markdown(
         """
@@ -333,7 +403,7 @@ if tabs == "CT-Scan":
                     st.markdown(
                         f"""
                         <div style='border: 2px solid green; border-radius: 5px; padding: 5px; background-color: white;'>
-                            <h3 style='text-align: center; color: green; font-size: 180%'> ✅✅✅ {answer[uploaded_file.name]} ✅✅✅ </h3>
+                            <h3 style='text-align: center; color: green; font-size: 180%'>✅{answer[uploaded_file.name]}✅</h3>
                         </div>
                         """,
                         unsafe_allow_html=True
@@ -342,7 +412,7 @@ if tabs == "CT-Scan":
                     st.markdown(
                         f"""
                         <div style='border: 2px solid red; border-radius: 5px; padding: 5px; background-color: white;'>
-                            <h3 style='text-align: center; color: red; font-size: 180%'> ‼️ ⚠️🫁 {answer[uploaded_file.name]} 🫁⚠️ ‼️ </h3>
+                            <h3 style='text-align: center; color: red; font-size: 180%'>{answer[uploaded_file.name]}</h3>
                         </div>
                         """,
                         unsafe_allow_html=True
@@ -356,3 +426,4 @@ if tabs == "CT-Scan":
 if tabs == "3D-Segmentation":
     st.markdown(" ")
     st.image('./segment_show.jpeg',use_column_width=True)
+
