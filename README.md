@@ -1,5 +1,5 @@
-<h1 align="center"> เข้าร่วมการแข่งขัน </h1>
-<h2 align="center"> 🚀 Thailand Innovation Awards ⭐ </h2>
+<p align="center">เข้าร่วมการแข่งขัน</p>
+<h1 align="center">🚀 Thailand Innovation Awards ⭐</h1>
 
 ![Alt text](TIA-04.jpg)
 
